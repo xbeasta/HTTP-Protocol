@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+rm read expected &> /dev/null
+
+PORT=$@
+
+# Create 5K file
+LARGE_RANDOM_DATA=`dd if=/dev/urandom count=10 bs=1M 2> /dev/null | base64 > file`
+SMALL_RANDOM_DATA=`dd if=/dev/urandom count=2 bs=1k 2> /dev/null | base64 > file2`
+
+# Start a big download, limited to 1M
+
+curl --limit-rate 1M -s http://127.0.0.1:$PORT/file &> /dev/null &
+
+sleep 1
+
+# Start a small download, as fast as possible
+START=$(date +%s%N | cut -b1-13 | sed s/N/000/g)
+if ! curl -s http://127.0.0.1:$PORT/file2 | diff file2 - ; then
+    echo "Downloaded data does not match for file2"
+    exit 1
+fi
+END=$(date +%s%N | cut -b1-13 | sed s/N/000/g)
+echo "Finished in $((END-START))ms"
+
+wait
+
+# Small download should have taken less than 1 second
+if [ $((END-START)) -gt "1000" ]; then
+    echo "Should have taken less than 1 sec (1000ms)"
+    exit 1
+fi
+exit 0

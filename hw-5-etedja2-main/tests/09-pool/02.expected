@@ -1,0 +1,4 @@
+[42m                   TEST 01-accept-ping PASSING                [0m
+[42m                   TEST 02-pending-accept PASSING                [0m
+[42m                   TEST 03-many-pending-accept PASSING                [0m
+[42m                   TEST 04-ping-echo PASSING                [0m
